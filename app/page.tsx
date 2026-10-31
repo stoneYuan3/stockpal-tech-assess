@@ -10,7 +10,7 @@ const BUTTON_LABEL = {
 };
 
 export default function Home() {
-  const { status, messages, reported, toggle } = useRealtimeSession();
+  const { status, messages, reported, toggle, clear } = useRealtimeSession();
   const dialogueEnd = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,6 +42,16 @@ export default function Home() {
       </div>
 
       <footer className="controls">
+        <button
+          type="button"
+          className="clear"
+          onClick={clear}
+          disabled={
+            status !== "idle" || (messages.length === 0 && reported.length === 0)
+          }
+        >
+          Clear
+        </button>
         <button
           type="button"
           className={status === "idle" ? "toggle" : "toggle active"}

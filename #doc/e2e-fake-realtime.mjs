@@ -40,7 +40,8 @@ const shot = async (name, w, h) => {
 const results = [];
 const check = (name, ok, detail = "") => { results.push(ok); console.log(`${ok ? "PASS" : "FAIL"} ${name} ${detail}`); };
 const text = () => ev("document.body.innerText");
-const click = () => ev("document.querySelector('button').click()");
+const click = () => ev("document.querySelector('.toggle').click()");
+const clearDisabled = () => ev("document.querySelector('.clear').disabled");
 
 await cdp("Page.enable"); await cdp("Runtime.enable");
 
@@ -71,6 +72,7 @@ await cdp("Page.addScriptToEvaluateOnNewDocument", { source: `
 await cdp("Page.navigate", { url: URL_ }); await sleep(1500);
 await click(); await sleep(300);
 check("live", (await text()).includes("End conversation"));
+check("clear disabled while live", (await clearDisabled()) === true);
 const emit = (e) => ev(`__emit(${JSON.stringify(e)})`);
 const call = (cid, names) => ({ type: "function_call", name: "report_unavailable_ingredients", call_id: cid, arguments: JSON.stringify({ ingredients: names }) });
 
@@ -114,10 +116,25 @@ check("idle end after 5s", t.includes("Session ended (idle).") && t.includes("St
 check("report stays after end", t.includes("Lemon"));
 check("peer closed once", (await ev("__closed")) === 1);
 const st = await ev("__stream.getTracks().map(t=>t.readyState).join()"); check("mic track stopped", st === "ended", st);
+check("clear enabled after end", (await clearDisabled()) === false);
+await ev("__sent = []");
 await click(); await sleep(300);
-check("next start clears report", !(await text()).includes("Lemon"));
+const kept = await text();
+check("next start keeps report and dialogue", kept.includes("Lemon") && kept.includes("No milk"));
+const ctx = (await ev("__sent"))[0];
+const ctxText = ctx?.item?.content?.[0]?.text ?? "";
+check("context sent as system item", ctx?.type === "conversation.item.create" && ctx.item.role === "system" && ctxText.includes("Already reported out: Lemon, Honey, Blue Curaçao Syrup.") && ctxText.includes("Worker: No milk") && !ctxText.includes("Session ended"), JSON.stringify(ctxText));
 await click(); await sleep(200);
 check("manual end", (await text()).includes("Session ended."));
+await ev("document.querySelector('.clear').click()"); await sleep(200);
+const cleared = await ev("[document.querySelectorAll('.message').length, document.querySelectorAll('.report li').length]");
+check("clear empties dialogue and report", JSON.stringify(cleared) === "[0,0]", JSON.stringify(cleared));
+check("clear disabled when empty", (await clearDisabled()) === true);
+await ev("__sent = []");
+await click(); await sleep(300);
+check("no context after clear", (await ev("__sent")).length === 0);
+await shot("cleared-live-phone.png", 390, 844);
+await click(); await sleep(200);
 const overflow = await ev("document.documentElement.scrollWidth > innerWidth");
 check("no horizontal overflow", overflow === false);
 

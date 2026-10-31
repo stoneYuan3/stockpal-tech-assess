@@ -41,7 +41,7 @@ Browsers block the microphone on plain HTTP unless the address is `localhost`, s
 ## Behaviour
 
 - Tap once to start and again to end. A session also ends after 5 seconds without speech or a reply, so a worker has about 5 seconds to answer a clarifying question.
-- The report accumulates in order during a session, stays visible afterwards and clears on the next Start.
+- The report and dialogue accumulate in order and carry over to the next conversation. Each new conversation sends them to the model as context (the report plus the last 20 dialogue lines), so a question left unanswered can still be answered after a restart. Tap **Clear** between conversations, or reload the page, to start fresh.
 - Replies are text only, to save tokens.
 - The worker's text streams into the dialogue once their turn ends, not while they are still speaking. It comes from a separate transcription model. It can differ from what the Realtime model heard, so check the model's behaviour rather than the transcript alone.
 

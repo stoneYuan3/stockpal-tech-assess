@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { buildContext } from "./context";
 import {
   appendToMessage,
   appendTranscriptDelta,
@@ -41,6 +42,12 @@ export function useRealtimeSession() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [reported, setReported] = useState<Ingredient[]>([]);
   const endSession = useRef<((notice?: string) => void) | null>(null);
+  // Lets start() read the latest records without depending on them.
+  const records = useRef({ messages, reported });
+
+  useEffect(() => {
+    records.current = { messages, reported };
+  }, [messages, reported]);
 
   const addSystemMessage = useCallback((text: string) => {
     setMessages((current) =>
@@ -53,8 +60,11 @@ export function useRealtimeSession() {
   }, []);
 
   const start = useCallback(async () => {
-    setMessages([]);
-    setReported([]);
+    // Snapshot before this session adds anything of its own.
+    const context = buildContext(
+      records.current.messages,
+      records.current.reported,
+    );
     setStatus("connecting");
 
     const abort = new AbortController();
@@ -197,6 +207,19 @@ export function useRealtimeSession() {
     };
 
     channel.addEventListener("open", () => {
+      // Earlier records go in as context only; no response.create follows.
+      if (context) {
+        channel.send(
+          JSON.stringify({
+            type: "conversation.item.create",
+            item: {
+              type: "message",
+              role: "system",
+              content: [{ type: "input_text", text: context }],
+            },
+          }),
+        );
+      }
       setStatus("live");
       resetIdleTimer();
     });
@@ -277,7 +300,12 @@ export function useRealtimeSession() {
     else void start();
   }, [start]);
 
+  const clear = useCallback(() => {
+    setMessages([]);
+    setReported([]);
+  }, []);
+
   useEffect(() => () => endSession.current?.(), []);
 
-  return { status, messages, reported, toggle };
+  return { status, messages, reported, toggle, clear };
 }

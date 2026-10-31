@@ -40,6 +40,7 @@ Requires Node 20.9 or later. This work used Node 24 on Windows.
 | `lib/useRealtimeSession.ts` | WebRTC lifecycle, server event handling, idle timer, cleanup. |
 | `app/api/session/route.ts` | Mints the ephemeral key. The API key stays on the server. |
 | `lib/report.ts`, `lib/dialogue.ts` | Pure logic for the report list and dialogue ordering, with Vitest tests. |
+| `lib/context.ts` | Builds the context message carried into each new conversation, with Vitest tests. |
 | `lib/ingredients.ts` | The 19 ingredient names. |
 | `app/page.tsx`, `app/globals.css` | The single screen. |
 | `#doc/e2e-fake-realtime.mjs` | The browser test described under Verification. |
@@ -64,6 +65,7 @@ Requires Node 20.9 or later. This work used Node 24 on Windows.
 
 ## Decisions to preserve
 
+- **Records carry over between conversations as context.** When the data channel opens, earlier records go in as one `system` message item: the report plus the last 20 dialogue lines, without `response.create`. The prompt says never to report from it alone. Clear works only between conversations, so the screen and the model's context stay in step. That `role: "system"` items are accepted mid-session is untested live.
 - **The prompt doesn't name test inputs such as "Caocao".** This keeps Set 2 a test of the model, not of a memorised answer. Don't add them unless the user asks.
 - **Blue Curaçao is Syrup and the brand is Goofu.** The spec is inconsistent (Powder, Goofo). `#doc/plan.md` gives the reasoning.
 - **Reports go through a tool with an `enum` of ingredient names, and the app renders the HTML.** This fixes the format and stops invented ingredients.
