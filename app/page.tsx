@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { buildExportText, exportFileName } from "@/lib/exportText";
+import { shareOrDownload } from "@/lib/shareOrDownload";
 import { useRealtimeSession } from "@/lib/useRealtimeSession";
 
 const BUTTON_LABEL = {
@@ -12,6 +14,15 @@ const BUTTON_LABEL = {
 export default function Home() {
   const { status, messages, reported, toggle, clear } = useRealtimeSession();
   const dialogueEnd = useRef<HTMLDivElement>(null);
+  const empty = messages.length === 0 && reported.length === 0;
+
+  const exportDialogue = () => {
+    const now = new Date();
+    void shareOrDownload(
+      buildExportText(messages, reported, now),
+      exportFileName(now),
+    );
+  };
 
   useEffect(() => {
     dialogueEnd.current?.scrollIntoView({ block: "end" });
@@ -44,13 +55,19 @@ export default function Home() {
       <footer className="controls">
         <button
           type="button"
-          className="clear"
+          className="secondary clear"
           onClick={clear}
-          disabled={
-            status !== "idle" || (messages.length === 0 && reported.length === 0)
-          }
+          disabled={status !== "idle" || empty}
         >
           Clear
+        </button>
+        <button
+          type="button"
+          className="secondary export"
+          onClick={exportDialogue}
+          disabled={empty}
+        >
+          Export
         </button>
         <button
           type="button"

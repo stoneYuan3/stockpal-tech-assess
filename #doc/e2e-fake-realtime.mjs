@@ -126,10 +126,16 @@ const ctxText = ctx?.item?.content?.[0]?.text ?? "";
 check("context sent as system item", ctx?.type === "conversation.item.create" && ctx.item.role === "system" && ctxText.includes("Already reported out: Lemon, Honey, Blue Curaçao Syrup.") && ctxText.includes("Worker (transcript, may be inaccurate): No milk") && !ctxText.includes("Session ended"), JSON.stringify(ctxText));
 await click(); await sleep(200);
 check("manual end", (await text()).includes("Session ended."));
+// Export on a desktop pointer downloads.
+await ev(`window.__dl = null; HTMLAnchorElement.prototype.click = function () { window.__dl = { name: this.download, href: this.href } }`);
+await ev("document.querySelector('.export').click()"); await sleep(200);
+const dl = await ev("window.__dl && fetch(__dl.href).then(r => r.text()).then(t => ({ name: __dl.name, t }))");
+check("export downloads txt", /^86ing-dialogue-\d{4}-\d{2}-\d{2}-\d{4}\.txt$/.test(dl?.name ?? "") && dl.t.includes("- Lemon\r\n") && dl.t.includes("Worker: No milk\r\n") && dl.t.includes("[Session ended.]"), JSON.stringify(dl));
 await ev("document.querySelector('.clear').click()"); await sleep(200);
 const cleared = await ev("[document.querySelectorAll('.message').length, document.querySelectorAll('.report li').length]");
 check("clear empties dialogue and report", JSON.stringify(cleared) === "[0,0]", JSON.stringify(cleared));
 check("clear disabled when empty", (await clearDisabled()) === true);
+check("export disabled when empty", (await ev("document.querySelector('.export').disabled")) === true);
 await ev("__sent = []");
 await click(); await sleep(300);
 check("no context after clear", (await ev("__sent")).length === 0);
@@ -137,6 +143,24 @@ await shot("cleared-live-phone.png", 390, 844);
 await click(); await sleep(200);
 const overflow = await ev("document.documentElement.scrollWidth > innerWidth");
 check("no horizontal overflow", overflow === false);
+
+// 3. Touch device shares instead of downloading.
+await cdp("Page.addScriptToEvaluateOnNewDocument", { source: `
+  window.matchMedia = (q) => ({ matches: q === '(pointer: coarse)' });
+  navigator.canShare = () => true;
+  navigator.share = async (d) => { window.__shared = d.files.map((f) => f.name) };
+  window.__dl = null; HTMLAnchorElement.prototype.click = function () { window.__dl = this.download };
+`});
+await cdp("Page.navigate", { url: URL_ }); await sleep(1500);
+await click(); await sleep(300);
+await emit({ type: "input_audio_buffer.committed", item_id: "s1" });
+await emit({ type: "conversation.item.input_audio_transcription.completed", item_id: "s1", transcript: "No honey" });
+await sleep(200);
+await ev("document.querySelector('.export').click()"); await sleep(300);
+const shared = await ev("[window.__shared, window.__dl]");
+check("export shares on touch", shared[0]?.length === 1 && /\.txt$/.test(shared[0][0]) && shared[1] === null, JSON.stringify(shared));
+await shot("export-phone.png", 390, 844);
+await click(); await sleep(200);
 
 chrome.kill();
 ws.close();

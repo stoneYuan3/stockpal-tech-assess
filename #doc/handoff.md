@@ -41,6 +41,7 @@ Requires Node 20.9 or later. This work used Node 24 on Windows.
 | `app/api/session/route.ts` | Mints the ephemeral key. The API key stays on the server. |
 | `lib/report.ts`, `lib/dialogue.ts` | Pure logic for the report list and dialogue ordering, with Vitest tests. |
 | `lib/context.ts` | Builds the context message carried into each new conversation, with Vitest tests. |
+| `lib/exportText.ts`, `lib/shareOrDownload.ts` | Export text and file name (with Vitest tests), and the share sheet on touch devices or a download on a PC. |
 | `lib/ingredients.ts` | The 19 ingredient names. |
 | `app/page.tsx`, `app/globals.css` | The single screen. |
 | `#doc/e2e-fake-realtime.mjs` | The browser test described under Verification. |
