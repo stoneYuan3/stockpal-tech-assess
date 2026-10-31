@@ -48,7 +48,7 @@ Requires Node 20.9 or later. This work used Node 24 on Windows.
 
 1. **First live session.** Run `npm run dev`, open http://localhost:3000 and tap Start. An invalid session field shows up as an error message in the dialogue, passed through from `client_secrets`.
 2. **Check the event names against real traffic.** In `npm run dev`, every data channel event is logged to the browser console as `[realtime] <type>` (debug level, so enable Verbose). Check:
-   - `conversation.item.input_audio_transcription.completed` (`item_id`, `transcript`) and `.failed`. The [transcription guide](https://developers.openai.com/api/docs/guides/realtime-transcription) now confirms both names. If the worker's text stays as "…", check the console first.
+   - `conversation.item.input_audio_transcription.completed` (`item_id`, `transcript`), `.delta` (`item_id`, `delta`, streams the worker's text in) and `.failed`. The [transcription guide](https://developers.openai.com/api/docs/guides/realtime-transcription) confirms all three names. If the worker's text stays as "…", check the console first.
    - `response.output_text.delta`, which the docs also list.
    - `input_audio_buffer.committed` and its `item_id`, which the transcription guide confirms.
 3. **Test on real phones and tablets.** They need HTTPS, and the README covers both LAN and Vercel routes.

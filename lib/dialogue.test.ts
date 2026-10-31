@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { appendToMessage, upsertMessage, type Message } from "./dialogue";
+import {
+  appendToMessage,
+  appendTranscriptDelta,
+  ensureMessage,
+  upsertMessage,
+  type Message,
+} from "./dialogue";
 
 const worker: Message = { id: "a", role: "worker", text: "…" };
 const reply: Message = { id: "b", role: "assistant", text: "Which milk?" };
@@ -20,5 +26,30 @@ describe("appendToMessage", () => {
     const first = appendToMessage([], "b", "assistant", "Which");
     const second = appendToMessage(first, "b", "assistant", " milk?");
     expect(second).toEqual([reply]);
+  });
+});
+
+describe("appendTranscriptDelta", () => {
+  it("replaces the placeholder with the first delta, then extends it", () => {
+    const first = appendTranscriptDelta([worker, reply], "a", "We ran");
+    const second = appendTranscriptDelta(first, "a", " out of milk");
+    expect(second).toEqual([{ ...worker, text: "We ran out of milk" }, reply]);
+  });
+
+  it("creates a worker message for an unknown id", () => {
+    expect(appendTranscriptDelta([], "a", "No milk")).toEqual([
+      { ...worker, text: "No milk" },
+    ]);
+  });
+});
+
+describe("ensureMessage", () => {
+  it("adds a new message", () => {
+    expect(ensureMessage([reply], worker)).toEqual([reply, worker]);
+  });
+
+  it("keeps text that already arrived", () => {
+    const streamed = { ...worker, text: "We ran" };
+    expect(ensureMessage([streamed], worker)).toEqual([streamed]);
   });
 });

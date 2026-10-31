@@ -1,7 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { appendToMessage, upsertMessage, type Message } from "./dialogue";
+import {
+  appendToMessage,
+  appendTranscriptDelta,
+  ensureMessage,
+  PENDING_TEXT,
+  upsertMessage,
+  type Message,
+} from "./dialogue";
 import type { Ingredient } from "./ingredients";
 import { mergeReported, parseToolIngredients } from "./report";
 import { REPORT_TOOL_NAME } from "./sessionConfig";
@@ -124,12 +131,18 @@ export function useRealtimeSession() {
         case "input_audio_buffer.committed":
           if (event.item_id) {
             setMessages((current) =>
-              upsertMessage(current, {
+              ensureMessage(current, {
                 id: event.item_id!,
                 role: "worker",
-                text: "…",
+                text: PENDING_TEXT,
               }),
             );
+          }
+          break;
+        case "conversation.item.input_audio_transcription.delta":
+          if (event.item_id && event.delta) {
+            const { item_id: id, delta } = event;
+            setMessages((current) => appendTranscriptDelta(current, id, delta));
           }
           break;
         case "conversation.item.input_audio_transcription.completed":
