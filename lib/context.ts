@@ -4,7 +4,11 @@ import type { Ingredient } from "./ingredients";
 // Caps the token cost of replaying a long shift into each new session.
 export const CONTEXT_MESSAGE_LIMIT = 20;
 
-const SPEAKER = { worker: "Worker", assistant: "Assistant" } as const;
+// Worker lines come from a separate transcription model and can be garbled.
+const SPEAKER = {
+  worker: "Worker (transcript, may be inaccurate)",
+  assistant: "Assistant",
+} as const;
 
 // Earlier records become one system message, so a new session can follow up
 // on them without re-reporting anything.

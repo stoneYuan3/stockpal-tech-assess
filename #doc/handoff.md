@@ -61,7 +61,7 @@ Requires Node 20.9 or later. This work used Node 24 on Windows.
 - **The 5-second idle limit may be tight.** A worker has about 5 seconds to answer a clarifying question.
 - **`near_field` noise reduction is untested for the walk-away scenarios in Set 3.** `far_field` is the alternative.
 - **`/api/session` has no auth.** Keep any deployed URL private and take it down after testing.
-- **The on-screen worker text comes from a separate transcription model** (`gpt-4o-mini-transcribe`, no ingredient hints). "Spide" may appear as "spied" even when the Realtime model understood it.
+- **The on-screen worker text comes from a separate transcription model** (`gpt-4o-mini-transcribe`). In live testing it drifted into Japanese or Korean script and garbled English ("I don't have any how" for "we don't have honey left"), while the Realtime model still reported Honey correctly. The fix: `TRANSCRIPTION_PROMPT` in `lib/sessionConfig.ts` steers it toward English and the ingredient names, and carried-over context labels worker lines as possibly inaccurate. If the drift continues, try `gpt-4o-mini-transcribe-2025-12-15`. `gpt-transcribe` and `gpt-live-transcribe` are not supported on `v1/realtime`, and `gpt-4o-transcribe` is deprecated.
 
 ## Decisions to preserve
 

@@ -16,7 +16,7 @@ describe("buildContext", () => {
     const context = buildContext([worker, reply], ["Lemon", "Honey"]);
     expect(context).toContain("Already reported out: Lemon, Honey.");
     expect(context).toContain(
-      "Earlier dialogue:\nWorker: No milk\nAssistant: Which milk?",
+      "Earlier dialogue:\nWorker (transcript, may be inaccurate): No milk\nAssistant: Which milk?",
     );
   });
 
@@ -43,6 +43,6 @@ describe("buildContext", () => {
     const context = buildContext(many, [])!;
     expect(context).not.toContain("line 4\n");
     expect(context).toContain("line 5\n");
-    expect(context.match(/^Worker:/gm)).toHaveLength(CONTEXT_MESSAGE_LIMIT);
+    expect(context.match(/^Worker /gm)).toHaveLength(CONTEXT_MESSAGE_LIMIT);
   });
 });

@@ -38,6 +38,10 @@ Anything else: for greetings, questions, small talk or requests unrelated to ing
 
 Always reply in English, in one short sentence.`;
 
+// Only shapes the worker's text on screen; the Realtime model hears the audio
+// itself. Short, noisy clips otherwise drift into other languages.
+const TRANSCRIPTION_PROMPT = `English speech from staff in a noisy Hong Kong style tea restaurant reporting ingredients that have run out, such as "we're out of honey". Ingredient names: ${INGREDIENTS.join(", ")}.`;
+
 export const SESSION_CONFIG = {
   type: "realtime",
   model: "gpt-realtime-2.1-mini",
@@ -69,7 +73,11 @@ export const SESSION_CONFIG = {
   audio: {
     input: {
       noise_reduction: { type: "near_field" },
-      transcription: { model: "gpt-4o-mini-transcribe", language: "en" },
+      transcription: {
+        model: "gpt-4o-mini-transcribe",
+        language: "en",
+        prompt: TRANSCRIPTION_PROMPT,
+      },
       turn_detection: {
         type: "semantic_vad",
         eagerness: "low",

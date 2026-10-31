@@ -123,7 +123,7 @@ const kept = await text();
 check("next start keeps report and dialogue", kept.includes("Lemon") && kept.includes("No milk"));
 const ctx = (await ev("__sent"))[0];
 const ctxText = ctx?.item?.content?.[0]?.text ?? "";
-check("context sent as system item", ctx?.type === "conversation.item.create" && ctx.item.role === "system" && ctxText.includes("Already reported out: Lemon, Honey, Blue Curaçao Syrup.") && ctxText.includes("Worker: No milk") && !ctxText.includes("Session ended"), JSON.stringify(ctxText));
+check("context sent as system item", ctx?.type === "conversation.item.create" && ctx.item.role === "system" && ctxText.includes("Already reported out: Lemon, Honey, Blue Curaçao Syrup.") && ctxText.includes("Worker (transcript, may be inaccurate): No milk") && !ctxText.includes("Session ended"), JSON.stringify(ctxText));
 await click(); await sleep(200);
 check("manual end", (await text()).includes("Session ended."));
 await ev("document.querySelector('.clear').click()"); await sleep(200);
