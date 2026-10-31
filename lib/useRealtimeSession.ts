@@ -188,7 +188,12 @@ export function useRealtimeSession() {
       resetIdleTimer();
     });
     channel.addEventListener("message", ({ data }) => {
-      handleEvent(JSON.parse(data) as ServerEvent);
+      const event = JSON.parse(data) as ServerEvent;
+      // Dev only: lets the event names be checked against real traffic.
+      if (process.env.NODE_ENV === "development") {
+        console.debug("[realtime]", event.type, event);
+      }
+      handleEvent(event);
     });
     peer.addEventListener("connectionstatechange", () => {
       if (

@@ -1,6 +1,6 @@
 # Handoff: 86ing Pal prototype
 
-State as of 2026-10-30. Read this first, then `#doc/plan.md` (design and decisions) and `plan.pdf` (original spec and test sets).
+State as of 2026-10-31. Read this first, then `#doc/plan.md` (design and decisions) and `plan.pdf` (original spec and test sets).
 
 ## Current state
 
@@ -47,10 +47,10 @@ Requires Node 20.9 or later. This work used Node 24 on Windows.
 ## Next steps, in order
 
 1. **First live session.** Run `npm run dev`, open http://localhost:3000 and tap Start. An invalid session field shows up as an error message in the dialogue, passed through from `client_secrets`.
-2. **Check the event names.** Confirm these against real traffic, for example by logging data channel messages in `handleEvent`:
-   - `conversation.item.input_audio_transcription.completed` and `.failed`, which could not be confirmed in the docs. If the worker's text stays as "…", suspect these first.
-   - `response.output_text.delta`, which the docs do list.
-   - `input_audio_buffer.committed` and its `item_id`.
+2. **Check the event names against real traffic.** In `npm run dev`, every data channel event is logged to the browser console as `[realtime] <type>` (debug level, so enable Verbose). Check:
+   - `conversation.item.input_audio_transcription.completed` (`item_id`, `transcript`) and `.failed`. The [transcription guide](https://developers.openai.com/api/docs/guides/realtime-transcription) now confirms both names. If the worker's text stays as "…", check the console first.
+   - `response.output_text.delta`, which the docs also list.
+   - `input_audio_buffer.committed` and its `item_id`, which the transcription guide confirms.
 3. **Test on real phones and tablets.** They need HTTPS, and the README covers both LAN and Vercel routes.
 4. **Support the user through Sets 1-3 in `plan.pdf`.** Tune `lib/sessionConfig.ts` from the results.
 
