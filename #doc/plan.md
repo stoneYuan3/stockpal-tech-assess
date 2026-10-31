@@ -6,7 +6,7 @@
 
 This prototype tests whether OpenAI's Realtime API, using [gpt-realtime-2.1-mini](https://developers.openai.com/api/docs/models/gpt-realtime-2.1-mini), can take spoken "we're out of X" reports from restaurant workers in chaotic conditions.
 
-It covers only the receiving side: it hears a report, works out which ingredients are out and prints them. It does not update any ordering platform. The project folder contains only `plan.pdf`, so this is a new build, and no code has been written yet.
+It covers only the receiving side: it hears a report, works out which ingredients are out and prints them. It does not update any ordering platform. The project folder contains only `plan.pdf`, so this was a new build.
 
 ## Stack and architecture
 
@@ -32,6 +32,7 @@ The app is one screen, one server route and a small `lib` folder.
 | `lib/sessionConfig.ts` | Model, instructions, tool schema, VAD settings. |
 | `lib/useRealtimeSession.ts` | React hook: WebRTC lifecycle, event handling, idle timer, cleanup. |
 | `lib/report.ts` + test | Pure logic for merging reported ingredients (ordering, dedupe). Vitest. |
+| `lib/dialogue.ts` + test | Pure logic that keeps late transcripts in their original dialogue position. Vitest. |
 | `.env.local.example`, `.gitignore`, `README.md` | Key setup, run instructions, phone testing steps. |
 
 ## Session behaviour
@@ -66,6 +67,8 @@ The model decides what is out, and the app controls what appears on screen. This
 | Partly heard or fading speech | Report if confident, otherwise ask for confirmation |
 | Background voice during a report | Report only the main speaker's ingredient. If unclear, ask, and never report the background one |
 | Anything else | One fixed polite line saying it only handles ingredient reports, with no conversation |
+
+The prompt states these rules generally and does not name test inputs such as "Caocao", so the assessment measures the model and not a memorised answer.
 
 Fictional brands (Spide, Goofu, Wonpao) get likely phonetic variants so they are matched despite odd transcription.
 
